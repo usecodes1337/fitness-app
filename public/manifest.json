@@ -1,0 +1,16 @@
+{
+  "short_name": "90 Дней Рельеф",
+  "name": "90 дней до идеального рельефа",
+  "icons": [
+    {
+      "src": "flame.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "display": "standalone",
+  "orientation": "portrait"
+}

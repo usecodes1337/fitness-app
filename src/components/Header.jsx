@@ -6,7 +6,7 @@ export default function Header({ profile, streakState, onOpenMatrix, onOpenPaywa
   const userName = profile?.name || profile?.telegramUsername || 'Атлет';
 
   return (
-    <div style={{ width: '100%', padding: '16px 20px 8px', background: 'transparent' }}>
+    <div style={{ width: '100%', padding: 'max(14px, env(safe-area-inset-top, 14px)) 20px 8px', background: 'transparent' }}>
       {/* Main Seamless Header Row (Matching Reference Concept Screenshot) */}
       <div style={{
         display: 'flex',

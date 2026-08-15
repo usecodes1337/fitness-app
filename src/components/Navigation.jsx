@@ -13,7 +13,7 @@ export default function Navigation({ activeTab, setActiveTab }) {
   return (
     <nav style={{
       position: 'absolute',
-      bottom: '14px',
+      bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
       left: '16px',
       right: '16px',
       height: '66px',

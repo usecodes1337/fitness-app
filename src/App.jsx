@@ -94,7 +94,7 @@ export default function App() {
         overflowX: 'hidden',
         WebkitOverflowScrolling: 'touch',
         position: 'relative',
-        paddingBottom: '90px'
+        paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))'
       }}>
         {activeTab === 'dashboard' && (
           <DailyDashboard

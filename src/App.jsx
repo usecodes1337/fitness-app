@@ -102,7 +102,6 @@ export default function App() {
             streakState={streakState}
             setStreakState={setStreakState}
             onOpenMatrix={() => setIsMatrixOpen(true)}
-            onOpenWeekly={() => setActiveTab('weekly')}
             onOpenWorkout={() => setActiveTab('workout')}
             onOpenNutrition={() => setActiveTab('nutrition')}
             onOpenStrikeSave={() => setIsStrikeSaveOpen(true)}
@@ -118,14 +117,6 @@ export default function App() {
               const cur = logs[day] || {};
               StorageManager.saveDailyLog(day, { ...cur, workout: true });
             }}
-          />
-        )}
-
-        {activeTab === 'weekly' && (
-          <WeeklyCheckin
-            profile={profile}
-            onUpdateProfile={(updated) => setProfile(updated)}
-            onClose={() => setActiveTab('dashboard')}
           />
         )}
 

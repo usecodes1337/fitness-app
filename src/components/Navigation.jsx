@@ -1,12 +1,11 @@
 import React from 'react';
-import { Home, Dumbbell, BarChart2, Utensils, BookOpen } from 'lucide-react';
+import { Home, Dumbbell, Utensils, BookOpen } from 'lucide-react';
 
 export default function Navigation({ activeTab, setActiveTab }) {
   const tabs = [
     { id: 'dashboard', label: 'Главная', icon: Home },
     { id: 'workout', label: 'Тренинг', icon: Dumbbell },
     { id: 'nutrition', label: 'Питание', icon: Utensils },
-    { id: 'weekly', label: 'Активность', icon: BarChart2 },
     { id: 'knowledge', label: 'Гайды', icon: BookOpen }
   ];
 
@@ -23,9 +22,9 @@ export default function Navigation({ activeTab, setActiveTab }) {
       border: '1px solid rgba(255, 255, 255, 0.65)',
       borderRadius: 'var(--radius-full)',
       display: 'grid',
-      gridTemplateColumns: 'repeat(5, 1fr)',
+      gridTemplateColumns: 'repeat(4, 1fr)',
       alignItems: 'center',
-      padding: '4px 6px',
+      padding: '4px 8px',
       boxShadow: '0 16px 36px rgba(35, 65, 60, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 0.95)',
       zIndex: 100
     }}>
@@ -63,7 +62,7 @@ export default function Navigation({ activeTab, setActiveTab }) {
             {/* Label strictly BELOW the icon, only visible when active */}
             {isActive && (
               <span style={{
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: 800,
                 color: 'var(--primary-teal-dark)',
                 whiteSpace: 'nowrap',

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import {
-  Check, Flame, Trophy, Snowflake,
-  Dumbbell, Utensils, Plus, Shield
+  Check, Flame, Dumbbell, Utensils, Footprints, Droplets,
+  Moon, Plus, ArrowRight, Snowflake, Sparkles, CheckCircle2
 } from 'lucide-react';
 import { StorageManager, formatDays } from '../utils/storage';
 
@@ -55,10 +55,24 @@ export default function DailyDashboard({
     e.stopPropagation();
     if (isSavedToday) return;
     const nextGlasses = Math.min(8, (checklist.waterGlasses || 0) + 1);
+    const isCompleted = nextGlasses >= 8;
     const updated = {
       ...checklist,
       waterGlasses: nextGlasses,
-      water: nextGlasses >= 8 ? true : checklist.water
+      water: isCompleted ? true : checklist.water
+    };
+    setChecklist(updated);
+  };
+
+  const addSteps = (e) => {
+    e.stopPropagation();
+    if (isSavedToday) return;
+    const nextSteps = (checklist.stepCount || 0) + 1250;
+    const isCompleted = nextSteps >= 10000;
+    const updated = {
+      ...checklist,
+      stepCount: nextSteps,
+      steps: isCompleted ? true : checklist.steps
     };
     setChecklist(updated);
   };
@@ -72,8 +86,8 @@ export default function DailyDashboard({
     setIsSavedToday(true);
 
     confetti({
-      particleCount: 90,
-      spread: 70,
+      particleCount: 110,
+      spread: 75,
       origin: { y: 0.6 }
     });
 
@@ -87,10 +101,17 @@ export default function DailyDashboard({
     setStreakState(newStreakState);
   };
 
+  const kbju = profile?.kbju || {
+    targetCalories: 1950,
+    protein: 145,
+    fats: 65,
+    carbs: 195
+  };
+
   return (
-    <div className="animate-fade-in" style={{ padding: '8px 18px 20px', width: '100%' }}>
+    <div className="animate-fade-in" style={{ padding: '6px 18px 24px', width: '100%' }}>
       
-      {/* Freeze Warning Banner */}
+      {/* Freeze Warning Banner (if frozen) */}
       {streakState.isFrozen && (
         <div
           onClick={onOpenStrikeSave}
@@ -121,213 +142,348 @@ export default function DailyDashboard({
         </div>
       )}
 
-      {/* Quick Action Cards (3 Clean Glass Tiles) */}
-      <div style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-          {/* Workout Card */}
-          <div
-            onClick={onOpenWorkout}
-            className="glass-card"
-            style={{
-              padding: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer'
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '12px',
-              background: 'var(--primary-teal-light)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--primary-teal-dark)',
-              flexShrink: 0
-            }}>
-              <Dumbbell size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-main)' }}>Тренировка</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Открыть план</div>
-            </div>
-          </div>
-
-          {/* Nutrition Card */}
-          <div
-            onClick={onOpenNutrition}
-            className="glass-card"
-            style={{
-              padding: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer'
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '12px',
-              background: 'var(--accent-coral-light)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--accent-coral)',
-              flexShrink: 0
-            }}>
-              <Utensils size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-main)' }}>Питание</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{profile?.kbju?.targetCalories || 1950} ккал</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Matrix & Streak Card */}
-        <div
-          onClick={onOpenMatrix}
-          className="glass-card"
-          style={{
-            padding: '12px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '12px',
-              background: 'var(--amber-light)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--accent-amber)',
-              flexShrink: 0
-            }}>
-              <Trophy size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-main)' }}>
-                Сетка 90 дней
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                День {dayNumber} из 90 • {formatDays(streakState.currentStreak || 1)} 🔥
-              </div>
-            </div>
-          </div>
-          <span className="badge badge-teal" style={{ fontSize: '11px' }}>
-            Сетка
-          </span>
-        </div>
-      </div>
-
-      {/* Unified Daily Checklist Card Container */}
+      {/* CENTRAL CARD: «Задания на сегодня» */}
       <div style={{ marginBottom: '18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', padding: '0 4px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-main)' }}>
-            Чек-лист дня ({completedCount} из 5)
-          </h3>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: completedCount === 5 ? 'var(--primary-teal-dark)' : 'var(--text-muted)' }}>
-            {completedCount === 5 ? '🎉 Все закрыто!' : `${completedCount}/5 выполнено`}
+        {/* Header of Tasks */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '10px',
+          padding: '0 4px'
+        }}>
+          <div>
+            <h2 style={{ fontSize: '17px', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+              Задания на сегодня
+            </h2>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+              5 ключевых привычек для идеального рельефа
+            </p>
+          </div>
+
+          <span className="badge badge-teal" style={{ fontSize: '11px', padding: '4px 10px' }}>
+            {completedCount === 5 ? '🎉 5/5 выполнено' : `${completedCount} из 5 закрыто`}
           </span>
         </div>
 
-        {/* Single Frosted Glass Card Container */}
-        <div className="glass-card" style={{ padding: '2px 18px', borderRadius: 'var(--radius-lg)' }}>
-          {[
-            { key: 'nutrition', title: '🥗 Питание', desc: `Норма ${profile?.kbju?.targetCalories || 1950} ккал и БЖУ` },
-            { key: 'workout', title: '🏋️‍♂️ Тренировка', desc: 'Плановая сессия выполнена' },
-            { key: 'steps', title: '👟 Шаги', desc: '10 000+ шагов за день' },
-            {
-              key: 'water',
-              title: '💧 Вода',
-              desc: `${checklist.waterGlasses || 5}/8 стаканов (2.0 л)`,
-              extra: (
-                <button
-                  onClick={addWaterGlass}
-                  disabled={isSavedToday}
-                  className="btn-liquid"
-                  style={{
-                    padding: '4px 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: 'var(--primary-teal-dark)',
-                    borderColor: 'rgba(61, 175, 161, 0.3)',
-                    background: 'rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  <Plus size={11} /> 250мл
-                </button>
-              )
-            },
-            { key: 'discipline', title: '🚫 Дисциплина', desc: 'Без сахара / без алкоголя / сон 7-8ч' }
-          ].map((item, idx) => {
-            const isChecked = checklist[item.key];
-            const isLast = idx === 4;
-
-            return (
-              <div
-                key={item.key}
-                onClick={() => toggleTask(item.key)}
-                style={{
-                  padding: '13px 0',
-                  cursor: isSavedToday ? 'default' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  borderBottom: isLast ? 'none' : '1px solid rgba(61, 175, 161, 0.12)',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {/* Round Checkbox with Mint-Teal Interactive Outline */}
-                <div style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  border: isChecked ? '2px solid var(--primary-teal)' : '2px solid rgba(61, 175, 161, 0.5)',
-                  background: isChecked ? 'linear-gradient(135deg, #44C7B5 0%, #31A598 100%)' : 'rgba(255, 255, 255, 0.85)',
-                  boxShadow: isChecked ? '0 2px 8px var(--teal-glow)' : 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                }}>
-                  {isChecked && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: '#1A2837',
-                    textDecoration: isChecked ? 'line-through' : 'none'
-                  }}>
-                    {item.title}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#4A5B6C', fontWeight: 500, marginTop: '2px' }}>
-                    {item.desc}
-                  </div>
-                </div>
-
-                {item.extra}
+        {/* Monolithic Glass Container for the 5 Tasks */}
+        <div className="glass-card" style={{ padding: '4px 18px', borderRadius: 'var(--radius-lg)' }}>
+          
+          {/* TASK 1: 🏋️‍♂️ Тренировка дня */}
+          <div
+            onClick={() => toggleTask('workout')}
+            style={{
+              padding: '14px 0',
+              cursor: isSavedToday ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              borderBottom: '1px solid rgba(61, 175, 161, 0.12)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              {/* Checkbox */}
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                border: checklist.workout ? '2px solid var(--primary-teal)' : '2px solid rgba(61, 175, 161, 0.5)',
+                background: checklist.workout ? 'linear-gradient(135deg, #44C7B5 0%, #31A598 100%)' : 'rgba(255, 255, 255, 0.85)',
+                boxShadow: checklist.workout ? '0 2px 8px var(--teal-glow)' : 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}>
+                {checklist.workout && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
               </div>
-            );
-          })}
+
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#1A2837',
+                  textDecoration: checklist.workout ? 'line-through' : 'none'
+                }}>
+                  🏋️‍♂️ Тренировка дня
+                </div>
+                <div style={{ fontSize: '11px', color: '#4A5B6C', fontWeight: 500, marginTop: '1px' }}>
+                  Силовая сессия • 20–25 мин
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action Button: Начать */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenWorkout();
+              }}
+              className="btn-liquid"
+              style={{
+                padding: '5px 12px',
+                fontSize: '11px',
+                fontWeight: 800,
+                color: 'var(--primary-teal-dark)',
+                borderColor: 'rgba(61, 175, 161, 0.35)',
+                background: 'rgba(255, 255, 255, 0.9)',
+                flexShrink: 0
+              }}
+            >
+              <span>{checklist.workout ? 'Просмотр' : 'Начать'}</span>
+              <ArrowRight size={12} strokeWidth={2.5} />
+            </button>
+          </div>
+
+          {/* TASK 2: 🥗 Питание */}
+          <div
+            onClick={() => toggleTask('nutrition')}
+            style={{
+              padding: '14px 0',
+              cursor: isSavedToday ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              borderBottom: '1px solid rgba(61, 175, 161, 0.12)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              {/* Checkbox */}
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                border: checklist.nutrition ? '2px solid var(--primary-teal)' : '2px solid rgba(61, 175, 161, 0.5)',
+                background: checklist.nutrition ? 'linear-gradient(135deg, #44C7B5 0%, #31A598 100%)' : 'rgba(255, 255, 255, 0.85)',
+                boxShadow: checklist.nutrition ? '0 2px 8px var(--teal-glow)' : 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}>
+                {checklist.nutrition && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+              </div>
+
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#1A2837',
+                  textDecoration: checklist.nutrition ? 'line-through' : 'none'
+                }}>
+                  🥗 Питание & КБЖУ
+                </div>
+                <div style={{ fontSize: '11px', color: '#4A5B6C', fontWeight: 500, marginTop: '1px' }}>
+                  {kbju.targetCalories} ккал • Б:{kbju.protein}г Ж:{kbju.fats}г У:{kbju.carbs}г
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action Button: Меню */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenNutrition();
+              }}
+              className="btn-liquid"
+              style={{
+                padding: '5px 12px',
+                fontSize: '11px',
+                fontWeight: 800,
+                color: 'var(--accent-coral-dark)',
+                borderColor: 'rgba(255, 112, 90, 0.35)',
+                background: 'rgba(255, 255, 255, 0.9)',
+                flexShrink: 0
+              }}
+            >
+              <span>Меню</span>
+              <ArrowRight size={12} strokeWidth={2.5} />
+            </button>
+          </div>
+
+          {/* TASK 3: 👟 Шаги */}
+          <div
+            onClick={() => toggleTask('steps')}
+            style={{
+              padding: '14px 0',
+              cursor: isSavedToday ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              borderBottom: '1px solid rgba(61, 175, 161, 0.12)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              {/* Checkbox */}
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                border: checklist.steps ? '2px solid var(--primary-teal)' : '2px solid rgba(61, 175, 161, 0.5)',
+                background: checklist.steps ? 'linear-gradient(135deg, #44C7B5 0%, #31A598 100%)' : 'rgba(255, 255, 255, 0.85)',
+                boxShadow: checklist.steps ? '0 2px 8px var(--teal-glow)' : 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}>
+                {checklist.steps && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+              </div>
+
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#1A2837',
+                  textDecoration: checklist.steps ? 'line-through' : 'none'
+                }}>
+                  👟 Шаги (10 000)
+                </div>
+                <div style={{ fontSize: '11px', color: '#4A5B6C', fontWeight: 500, marginTop: '1px' }}>
+                  {checklist.stepCount.toLocaleString('ru-RU')} из 10 000 шагов
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Step Adder */}
+            <button
+              onClick={addSteps}
+              disabled={isSavedToday}
+              className="btn-liquid"
+              style={{
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--primary-teal-dark)',
+                borderColor: 'rgba(61, 175, 161, 0.3)',
+                background: 'rgba(255, 255, 255, 0.9)',
+                flexShrink: 0
+              }}
+            >
+              <Plus size={11} /> 1 250
+            </button>
+          </div>
+
+          {/* TASK 4: 💧 Вода */}
+          <div
+            onClick={() => toggleTask('water')}
+            style={{
+              padding: '14px 0',
+              cursor: isSavedToday ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              borderBottom: '1px solid rgba(61, 175, 161, 0.12)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              {/* Checkbox */}
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                border: checklist.water ? '2px solid var(--primary-teal)' : '2px solid rgba(61, 175, 161, 0.5)',
+                background: checklist.water ? 'linear-gradient(135deg, #44C7B5 0%, #31A598 100%)' : 'rgba(255, 255, 255, 0.85)',
+                boxShadow: checklist.water ? '0 2px 8px var(--teal-glow)' : 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}>
+                {checklist.water && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+              </div>
+
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#1A2837',
+                  textDecoration: checklist.water ? 'line-through' : 'none'
+                }}>
+                  💧 Водный баланс
+                </div>
+                <div style={{ fontSize: '11px', color: '#4A5B6C', fontWeight: 500, marginTop: '1px' }}>
+                  {checklist.waterGlasses || 5}/8 стаканов ({((checklist.waterGlasses || 5) * 0.25).toFixed(1)} л)
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Water Button */}
+            <button
+              onClick={addWaterGlass}
+              disabled={isSavedToday}
+              className="btn-liquid"
+              style={{
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--primary-teal-dark)',
+                borderColor: 'rgba(61, 175, 161, 0.3)',
+                background: 'rgba(255, 255, 255, 0.9)',
+                flexShrink: 0
+              }}
+            >
+              <Plus size={11} /> 250мл
+            </button>
+          </div>
+
+          {/* TASK 5: 🚫 Дисциплина */}
+          <div
+            onClick={() => toggleTask('discipline')}
+            style={{
+              padding: '14px 0',
+              cursor: isSavedToday ? 'default' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            {/* Checkbox */}
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              border: checklist.discipline ? '2px solid var(--primary-teal)' : '2px solid rgba(61, 175, 161, 0.5)',
+              background: checklist.discipline ? 'linear-gradient(135deg, #44C7B5 0%, #31A598 100%)' : 'rgba(255, 255, 255, 0.85)',
+              boxShadow: checklist.discipline ? '0 2px 8px var(--teal-glow)' : 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}>
+              {checklist.discipline && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: 800,
+                color: '#1A2837',
+                textDecoration: checklist.discipline ? 'line-through' : 'none'
+              }}>
+                🚫 Дисциплина и режим
+              </div>
+              <div style={{ fontSize: '11px', color: '#4A5B6C', fontWeight: 500, marginTop: '1px' }}>
+                Сон 7–8 часов • Без сахара и алкоголя
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Save Day Button */}
+      {/* BOTTOM FIXATION BUTTON: «Сохранить День X» */}
       {isSavedToday ? (
         <div className="glass-card" style={{
-          padding: '14px',
+          padding: '16px',
           textAlign: 'center',
           color: 'var(--primary-teal-dark)',
           fontWeight: 800,
@@ -336,20 +492,27 @@ export default function DailyDashboard({
           justifyContent: 'center',
           gap: '8px',
           background: 'rgba(255, 255, 255, 0.85)',
-          borderColor: 'rgba(61, 175, 161, 0.4)'
+          borderColor: 'rgba(61, 175, 161, 0.45)',
+          boxShadow: '0 8px 24px rgba(61, 175, 161, 0.12)'
         }}>
-          <Check size={18} />
-          <span>День {dayNumber} успешно сохранён! 🔥</span>
+          <CheckCircle2 size={20} color="var(--primary-teal)" />
+          <span style={{ fontSize: '15px' }}>День {dayNumber} успешно зафиксирован! 🔥</span>
         </div>
       ) : (
         <button
           onClick={handleSaveDay}
           disabled={completedCount === 0}
           className="btn-coral"
-          style={{ padding: '14px', fontSize: '15px', opacity: completedCount === 0 ? 0.6 : 1 }}
+          style={{
+            padding: '16px',
+            fontSize: '16px',
+            fontWeight: 900,
+            opacity: completedCount === 0 ? 0.6 : 1,
+            borderRadius: 'var(--radius-full)'
+          }}
         >
-          <Flame size={18} />
-          <span>Сохранить День {dayNumber}</span>
+          <Flame size={20} />
+          <span>Сохранить День {dayNumber} 🔥</span>
         </button>
       )}
     </div>
